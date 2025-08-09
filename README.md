@@ -6,6 +6,10 @@ A comprehensive file processing API built with Node.js and Express that provides
 
 - **File Upload & Management**: Support for multiple file types with validation
 - **File Processing**: Image resizing, conversion, compression, and metadata extraction
+- **Document Processing**: Convert between document formats (DOCX, PDF, Excel, Text)
+- **Processing Queue**: Asynchronous file processing with priority management
+- **Web Interface**: Beautiful, responsive dashboard for file management
+- **Advanced Logging**: Structured logging with file rotation
 - **Document Processing**: PDF text extraction, Word document parsing, Excel data extraction
 - **Security**: File type validation, size limits, and security checks
 - **Search & Filter**: Advanced file search with multiple criteria
@@ -73,6 +77,14 @@ The API will be available at `http://localhost:3000`
 
 ### File Processing
 - `POST /api/files/:fileId/process` - Process file (resize, convert, compress, extract)
+
+### Queue Management
+- `GET /api/queue/status` - Get processing queue status
+- `POST /api/queue/jobs` - Add a job to the processing queue
+- `GET /api/queue/jobs/:jobId` - Get job status
+- `DELETE /api/queue/jobs/:jobId` - Remove job from queue
+- `DELETE /api/queue/jobs` - Clear entire queue
+- `GET /api/queue/jobs` - Get all jobs
 
 ### File Search
 - `GET /api/files/search` - Search files with filters

@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # Main application
+  app:
+    build:
+      context: .
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - LOG_LEVEL=debug
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - redis
+    networks:
+      - file-processing-network
+    restart: unless-stopped
+
+  # Redis for queue management
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - file-processing-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # MongoDB for future use
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=file-processing-api
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - file-processing-network
+    restart: unless-stopped
+
+  # Redis Commander for queue monitoring
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - file-processing-network
+    restart: unless-stopped
+
+  # MongoDB Express for database management
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8082:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:password@mongodb:27017/
+    depends_on:
+      - mongodb
+    networks:
+      - file-processing-network
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+    driver: local
+  mongodb_data:
+    driver: local
+
+networks:
+  file-processing-network:
+    driver: bridge
